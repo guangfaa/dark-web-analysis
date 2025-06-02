@@ -1,0 +1,45 @@
+import re
+from pathlib import Path
+
+def extract_onion_addresses():
+    # 配置路径和参数
+    input_dir = Path("/public/home/blockchain_2/slave1/experiment/graphson/graphson5")
+    output_file = Path("/public/home/blockchain_2/slave1/experiment/analysis/midu/sites.txt")
+    pattern = re.compile(r'\b([a-z0-9]{56}\.onion)\b', re.IGNORECASE)  # 正则表达式
+    
+    # 使用集合去重 + 列表保序
+    seen = set()
+    ordered_addresses = []
+    
+    # 遍历44个文件
+    for i in range(44):
+        # 生成文件名 dark00000.json ~ dark00043.json
+        filename = f"dark{i:05d}.json"
+        file_path = input_dir / filename
+        
+        # 处理文件
+        try:
+            content = file_path.read_text(encoding='utf-8')
+            matches = pattern.findall(content)
+            
+            # 提取并标准化地址
+            for addr in matches:
+                addr_lower = addr.lower()
+                if addr_lower not in seen:
+                    seen.add(addr_lower)
+                    ordered_addresses.append(addr_lower)
+                    
+            print(f"已处理文件: {filename} (找到 {len(matches)} 个地址)")
+                    
+        except FileNotFoundError:
+            print(f"⚠️ 文件不存在: {filename}")
+        except Exception as e:
+            print(f"处理文件 {filename} 时出错: {str(e)}")
+    
+    # 写入结果文件
+    output_file.write_text('\n'.join(ordered_addresses), encoding='utf-8')
+    print(f"\n✅ 完成！共找到 {len(ordered_addresses)} 个唯一地址")
+    print(f"结果已保存至: {output_file.absolute()}")
+
+if __name__ == "__main__":
+    extract_onion_addresses()

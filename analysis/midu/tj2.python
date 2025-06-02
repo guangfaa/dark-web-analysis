@@ -1,0 +1,39 @@
+import re
+
+# 目标统计数量列表
+target_counts = {
+    22536, 22539, 22542, 22543, 22554, 22555,
+    22655, 22656, 22661, 22674, 22769, 22771,
+    22788, 22894, 22896, 22899, 22913, 23020,
+    23021, 23022, 23040
+}
+
+# 存储匹配的Site地址
+unique_sites = set()
+
+# 正则表达式模式匹配
+pattern = re.compile(
+    r"Site:\s+([a-z0-9]{56})\s+的统计数量为:\s+(\d+)"
+)
+
+# 读取文件并提取数据
+try:
+    with open("miduru2.out", "r", encoding="utf-8") as f:
+        for line in f:
+            match = pattern.search(line)
+            if match:
+                site, count = match.groups()
+                print(site)
+                if int(count) in target_counts:
+                    unique_sites.add(site)
+except FileNotFoundError:
+    print("错误：未找到 miduru2.out 文件")
+    exit(1)
+print(unique_sites)
+# 写入结果到文件
+if unique_sites:
+    with open("unique_sites.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(sorted(unique_sites)))
+    print(f"成功提取 {len(unique_sites)} 个唯一Site，已保存至 unique_sites.txt")
+else:
+    print("未找到匹配的Site地址")
